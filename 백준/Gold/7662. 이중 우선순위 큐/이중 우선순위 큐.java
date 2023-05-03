@@ -4,64 +4,38 @@ import java.io.*;
 public class Main {
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        int tc = Integer.parseInt(br.readLine());
 
+        StringBuilder sb = new StringBuilder();
+        int tc = Integer.parseInt(br.readLine());
         for (int i = 0; i < tc; i++) {
             int N = Integer.parseInt(br.readLine());
-            PriorityQueue<Integer> minHeap = new PriorityQueue<>();
-            PriorityQueue<Integer> maxHeap = new PriorityQueue<>(Collections.reverseOrder());
-            Map<Integer, Integer> map = new HashMap<>();
-
+            TreeMap<Integer, Integer> map = new TreeMap<>();
             for (int j = 0; j < N; j++) {
                 StringTokenizer st = new StringTokenizer(br.readLine());
                 String cmd = st.nextToken();
                 int num = Integer.parseInt(st.nextToken());
+
                 if (cmd.equals("I")) {
-                    minHeap.offer(num);
-                    maxHeap.offer(num);
                     map.put(num, map.getOrDefault(num, 0) + 1);
                     continue;
                 }
-                if (cmd.equals("D")) {
-                    if(map.size()==0){
-                        continue;
-                    }
-                    PriorityQueue<Integer> pq;
-                    if (num == -1) {
-                        pq = minHeap;
-                    } else {
-                        pq = maxHeap;
-                    }
-                    delete(pq, map);
+                if (map.isEmpty()) {
+                    continue;
                 }
+                // TreeMap이 제공하는 firstKey()와 lastKey() 이용
+                int n = (num == 1) ? map.lastKey() : map.firstKey();
+                if (map.put(n, map.get(n) - 1) == 1) {  // 해당 정수의 개수를 -1 해주면서 만약 0개가 된다면 삭제
+                    map.remove(n);
+                }
+
+
             }
-            if (map.size() == 0)
-                System.out.println("EMPTY");
-            else {
-                int n = delete(maxHeap, map);
-                System.out.println(n + " " + (map.size() > 0 ? delete(minHeap, map) : n));
-            }
-        }
-
-    }
-
-    private static int delete(PriorityQueue<Integer> pq, Map<Integer, Integer> map) {
-        int num;
-        while (true) {
-            num = pq.poll();
-            int cnt = map.getOrDefault(num, 0);
-
-            if (cnt == 0)
+            if (map.size() == 0) {
+                sb.append("EMPTY\n");
                 continue;
-
-            if (cnt == 1)
-                map.remove(num);
-            else
-                map.put(num, cnt - 1);
-
-            break;
+            }
+            sb.append(map.lastKey()).append(" ").append(map.firstKey()).append("\n");
         }
-
-        return num;
+        System.out.println(sb.toString());
     }
 }

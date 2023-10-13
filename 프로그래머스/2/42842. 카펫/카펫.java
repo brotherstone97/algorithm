@@ -12,8 +12,7 @@ class Solution {
             int brownWidth = measure[0]+2;
             int brownHeight = measure[1]+2;
             if(brownWidth * brownHeight - yellow == brown){
-                int[] answer = {brownWidth,brownHeight};
-                return answer;
+                return new int[]{brownWidth,brownHeight};
             }
         }
         return null;
@@ -26,8 +25,7 @@ class Solution {
                 //i(제수)와 몫은 yellow의 약수
                 //i<=몫
                 int quo = yellow/i;
-                int[] result = {quo,i};
-                measures.add(result);
+                measures.add(new int[]{quo,i});
                 if(i>=quo){
                     return measures;
                 }

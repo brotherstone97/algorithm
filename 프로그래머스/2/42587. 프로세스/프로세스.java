@@ -5,25 +5,26 @@ class Solution {
     public int solution(int[] priorities, int location) {
         int answer = 0;
         
-        PriorityQueue<Integer> pq = new PriorityQueue<>(Collections.reverseOrder());
+        PriorityQueue<Integer> q = new PriorityQueue<>(Collections.reverseOrder());
         
-        Arrays
-            .stream(priorities)
-            .boxed()
-            .forEach(p->pq.add(p));
+        Arrays.stream(priorities).boxed().forEach(p -> q.add(p));
         
-        while(!pq.isEmpty()){
+        while(!q.isEmpty()){
             for(int i=0; i<priorities.length; i++){
-                if(pq.peek()==priorities[i]){
+                if(q.peek() == priorities[i]){
                     answer++;
-                    pq.poll();
-                    
-                    if(i==location){
-                        return answer;
-                    }
+                    q.poll();
+                if(i==location){
+                    return answer;
                 }
             }
+
+            }
         }
-        return answer;
+        return -1;
     }
+
 }
+
+//순서는 배열을 이용
+//

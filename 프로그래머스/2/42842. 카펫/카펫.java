@@ -1,36 +1,28 @@
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
 
 class Solution {
     public int[] solution(int brown, int yellow) {
         int[] answer = {};
-        List<int[]> measures = calcMeasure(yellow);
-        return calcWH(brown, yellow, measures);
-    }
-    
-    private int[] calcWH(int brown, int yellow, List<int[]> measures){
-        for(int[] measure: measures){
-            int brownWidth = measure[0]+2;
-            int brownHeight = measure[1]+2;
-            if(brownWidth * brownHeight - yellow == brown){
-                return new int[]{brownWidth,brownHeight};
-            }
-        }
-        return null;
-    }
-    
-    private List<int[]> calcMeasure(int yellow){
-        List<int[]> measures = new ArrayList<>();
+        
+        List<int[]> yellowPair = new ArrayList<>();
+        
         for(int i=1; i<=yellow; i++){
-            if(yellow%i==0){
-                //i(제수)와 몫은 yellow의 약수
-                //i<=몫
-                int quo = yellow/i;
-                measures.add(new int[]{quo,i});
-                if(i>=quo){
-                    return measures;
-                }
+            if(yellow % i == 0 && (yellow / i >= i)){
+                yellowPair.add(new int[]{yellow/i, i});
             }
         }
-        return measures;
+        
+        for(int[] pair : yellowPair){
+            int width = pair[0];
+            int height = pair[1];
+            
+            if(2 * (width + 2) + 2 * height == brown){
+                answer = new int[]{width+2, height+2};
+                break;
+            }
+        }
+        
+        return answer;
     }
 }

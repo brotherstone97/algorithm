@@ -1,60 +1,66 @@
-import java.util.*;
+import java.util.PriorityQueue;
+import java.util.Arrays;
 
 class Solution {
+    private int globalLength;
     private int[][] adj;
-    private int res=Integer.MAX_VALUE;
-    private int[] minCost;
     private boolean[] visited;
-    
-    private int N;
+    private int answer;
     
     public int solution(int n, int s, int a, int b, int[][] fares) {
-        N=n;
+        globalLength = n+1;
+        adj = new int[globalLength][globalLength];
+        visited = new boolean[globalLength];
         
-        //1. 인접 행렬 생성
-        adj = new int[N+1][N+1];
-        
-        for(int[] fare: fares){
-            int n1 = fare[0];
-            int n2 = fare[1];
-            int weight = fare[2];
+        for(int i=0; i<fares.length; i++){
+            int start = fares[i][0];
+            int end = fares[i][1];
+            int weight = fares[i][2];
             
-            adj[n1][n2] = weight;
-            adj[n2][n1] = weight;
+            adj[start][end] = weight;
+            adj[end][start] = weight;
         }
         
         int[] startS = dijkstra(s);
         int[] startA = dijkstra(a);
         int[] startB = dijkstra(b);
         
-        for(int i=1; i<N+1; i++){
-            res = Math.min(res, startS[i]+startA[i]+startB[i]);
+        answer = startS[a]+startS[b];
+        
+        for(int i=1; i<globalLength; i++){
+            answer = Math.min(answer, startS[i]+startA[i]+startB[i]);
         }
         
-        return res;
+        return answer;
     }
     
-    private int[] dijkstra(int departure){
-        PriorityQueue<Node> pq = new PriorityQueue<>();
-        pq.offer(new Node(departure, 0));
+    private int[] dijkstra(int start){
+        int[] minCost = new int[globalLength];
+        visited = new boolean[globalLength];
+        Arrays.fill(minCost, Integer.MAX_VALUE);
+        minCost[start]=0;
         
-        init(departure);
+        PriorityQueue<Node> pq = new PriorityQueue<>();
+        pq.offer(new Node(start, 0));
         
         while(!pq.isEmpty()){
-            Node current = pq.poll();
+            Node curNode = pq.poll();
+            int cur = curNode.next;
+            int weight = curNode.weight;
             
-            if(visited[current.end]){
+            if(visited[cur]){
                 continue;
             }
-            visited[current.end]=true;
             
-            for(int i=1; i<N+1; i++){
-                int nextWeight = adj[current.end][i];
-                if(nextWeight == 0){
+            visited[cur]=true;
+            
+            for(int i=1; i<globalLength; i++){
+                if(adj[cur][i]==0){
                     continue;
                 }
-                if(!visited[i] && minCost[i]> current.weight + nextWeight){
-                    minCost[i] = current.weight + nextWeight;
+                
+                if(minCost[i]>weight+adj[cur][i]){
+                    minCost[i] = weight + adj[cur][i];
                     pq.offer(new Node(i, minCost[i]));
                 }
             }
@@ -62,20 +68,12 @@ class Solution {
         return minCost;
     }
     
-    private void init(int departure){
-        minCost = new int[N+1];
-        Arrays.fill(minCost, Integer.MAX_VALUE);
-        minCost[departure] = 0;
-        
-        visited = new boolean[N+1];
-    }
-    
     class Node implements Comparable<Node>{
-        int end;
+        int next;
         int weight;
         
-        Node(int end, int weight){
-            this.end = end;
+        Node(int next, int weight){
+            this.next = next;
             this.weight = weight;
         }
         

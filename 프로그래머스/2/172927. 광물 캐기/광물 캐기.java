@@ -1,135 +1,89 @@
 import java.util.*;
 
 class Solution {
-    private int fatigue=25*50+1;
-    private List<Integer> combination;
-    private List<List<Integer>> seq = new ArrayList<>();
-    private Stack<String> st = new Stack<>();
+    private int _min=Integer.MAX_VALUE;
+    private int mineralsSize;
+    private Map<String, Integer> ironPickax = new HashMap<>();
+    private Map<String, Integer> stonePickax = new HashMap<>();
+    private int currentMineral;
     
     public int solution(int[] picks, String[] minerals) {
-        for(int i=minerals.length-1; i>=0; i--){
-            st.add(minerals[i]);
-        }
-        
-        int need = 0;
-        int[] needs = new int[3];
-        if(minerals.length%5==0){
-            need = minerals.length/5;
-        }else{
-            need = minerals.length/5 + 1;
-        }
-
-        int sum = 0;
-        for(int i=0; i<picks.length; i++){
-            if(picks[i]>=need){
-                needs[i]=need;
-                sum+=need;
-                break;
-            }
-            needs[i] = picks[i];
-            sum+= picks[i];
-            need-=picks[i];
-        }
-        
-        combination = new ArrayList<>(sum);
-        
-        createCombi(needs);
-        getSeq(combination.size(), combination.size(), new ArrayList<>(), new boolean[combination.size()]);
-        getMinFatigue(minerals);
-        
-        return fatigue;
+        putData();
+        mineralsSize=minerals.length;
+        dfs(0, picks, minerals);
+        return _min;
     }
     
-    private void fillStack(String[] minerals){
-        for(int i=minerals.length-1; i>=0; i--){
-            st.add(minerals[i]);
-        }
-    }
-    private void getMinFatigue(String[] minerals){
-        for(List<Integer> list : seq){
-            int _fatigue = 0;
-            for(int pick : list){
-                if(pick==0){
-                    _fatigue+=calcFatigue(0);
-                    continue;
-                }
-                if(pick==1){
-                    _fatigue+=calcFatigue(1);
-                    continue;
-                }
-                _fatigue+=calcFatigue(2);
-                continue;
-            }
-            fatigue = Math.min(fatigue, _fatigue);
-            fillStack(minerals);
-        }
-    }
-    
-    private int calcFatigue(int currentPick){
-        int _fatigue = 0;
-        
-        if(currentPick==0){
-            for(int i=0; i<5; i++){
-                if(!st.isEmpty()){
-                    String popped = st.pop();
-                    _fatigue++;
-                }
-            }
-        }
-        else if(currentPick==1){
-            for(int i=0; i<5; i++){
-                if(!st.isEmpty()){
-                    String popped = st.pop();
-                    if(popped.equals("diamond")){
-                        _fatigue+=5;
-                    }else{
-                        _fatigue++;
-                    }
-                }
-            }
-        }
-        else {
-            for(int i=0; i<5; i++){
-                if(!st.isEmpty()){
-                    String popped = st.pop();
-                    if(popped.equals("diamond")){
-                        _fatigue+=25;
-                    } else if(popped.equals("iron")){
-                        _fatigue+=5;
-                    }else{
-                        _fatigue++;
-                    }
-                }
-            }
-        }
-        
-        return _fatigue;
-    }
-    private void getSeq(int n, int r, List<Integer> list, boolean[] visited){
-        if(r==0){
-            List<Integer> temp = new ArrayList<>();
-            list.forEach(e->temp.add(e));
-            seq.add(temp);
+    private void dfs(int sumDegree, int[] picks, String[] minerals){
+        if(sumDegree>_min){
             return;
         }
-        for(int i=0; i<n; i++){
-            if(visited[i]){
+        //모든 곡괭이 0개 || minerals배열의 끝에 다달았을 때.
+        if((picks[0]==0&&picks[1]==0&&picks[2]==0)
+          ||currentMineral>=mineralsSize){
+            _min = Math.min(_min, sumDegree);
+            return;
+        }
+        
+        for(int i=0; i<3; i++){
+            if(picks[i]==0){
                 continue;
             }
-            visited[i]=true;
-            list.add(combination.get(i));
-            getSeq(n, r-1, list, visited);
-            list.remove(list.size()-1);
-            visited[i]=false;
-        }
-    }
-    
-    private void createCombi(int[] needs){
-        for(int i=0; i<needs.length; i++){
-            int cnt = needs[i];
-            for(int j=0; j<cnt; j++){
-                combination.add(i);
+            int[] calculated = calc(i, minerals);
+            picks[i]-=1;
+            dfs(sumDegree+calculated[0], picks, minerals);
+            currentMineral -= calculated[1];
+            picks[i]+=1;
             }
         }
+        private int[] calc(int pick, String[] minerals){
+        int degreeOfFatigue=0;
+        int restMinerals = mineralsSize-currentMineral;
+        int iter=0;
+        if(restMinerals>=5){
+            iter=5;
+        }else{
+            iter=restMinerals;
+        }
+        if(pick==0){
+            for(int i=currentMineral; i<currentMineral+iter; i++){
+                degreeOfFatigue++;
+            }
+        }else if(pick==1){
+            for(int i=currentMineral; i<currentMineral+iter; i++){
+                int degree = ironPickax.get(minerals[i]);
+                degreeOfFatigue+=degree;
+            }
+        }else{
+            for(int i=currentMineral; i<currentMineral+iter; i++){
+                    int degree = stonePickax.get(minerals[i]);
+                    degreeOfFatigue+=degree;
+            }
+        }
+        currentMineral += iter;
+        return new int[]{degreeOfFatigue,iter};
     }
-}
+    
+    private void putData(){
+        ironPickax.put("diamond", 5);
+        ironPickax.put("iron", 1);
+        ironPickax.put("stone", 1);
+        stonePickax.put("diamond", 25);
+        stonePickax.put("iron", 5);
+        stonePickax.put("stone", 1);
+    }
+    }
+//최소한의 피로도 -> 완탐
+
+//곡괭이는 아무거나 선택해서 사용할 수 없을 때까지 사용.
+//광물은 반드시 순서대로 캘 수 있음
+//더 이상 사용할 곡괭이가 없거나, 모든 광물을 다 캘 때까지 반복
+
+/**
+흐름
+dfs(0, 0)호출 -> 다이아, 철, 돌 곡괭이 중 하나 선택. -> minerals 5개 캐고 피로도 합산 -> dfs(1, sum+??) 재귀 호출
+dfs리턴 시 차감시킨 곡괭이 개수 원상복귀, 
+종료 조건: 더 이상 사용할 곡괭이가 없거나, 모든 광물을 다 캔 경우
+**/
+
+//아니면 삼진트리?

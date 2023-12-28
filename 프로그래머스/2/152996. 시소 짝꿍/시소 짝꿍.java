@@ -1,6 +1,4 @@
-import java.util.Arrays;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 class Solution {
     public long solution(int[] weights) {

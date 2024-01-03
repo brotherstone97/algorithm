@@ -1,3 +1,8 @@
+/*
+A와 레지스터에 저장된 값을 누산한다. 이 때 DFS로 풀 경우 결과값 B를 찾기 위해 depth가 무한히 깊어질 수 있으므로 BFS를 이용해 최단거리로 결과값 B를 구한다.
+이 때 최적화를 위해 visited 배열을 사용하는데 현재 값과 레지스터의 값을 연산한 값이 이미 도출된 적 있는 값이면 continue한다.
+*/
+
 import java.util.*;
 import java.io.*;
 
@@ -32,7 +37,6 @@ class Main {
 
             bfs(A, B);
             idx++;
-//            System.out.println("================================");
         }
 
         Arrays.stream(cmds).forEach(System.out::println);
@@ -48,12 +52,11 @@ class Main {
             for (int i = 0; i < 4; i++) {
                 int calculatedCurrent = calc(polled.current, i);
 
-                if(visited[calculatedCurrent]){
+                if (visited[calculatedCurrent]) {
                     continue;
                 }
-                visited[calculatedCurrent]=true;
+                visited[calculatedCurrent] = true;
 
-//                System.out.println(A + ", "+ calculatedCurrent+","+ polled.cmd+cmdMapper[i]);
                 //시간 복잡도 개선(q.poll시 검증 -> enqueue전 검증)
                 if (calculatedCurrent == answer) {
                     cmds[idx] = polled.cmd.append(cmdMapper[i]).toString();
@@ -79,11 +82,12 @@ class Main {
             }
             return current - 1;
         }
-        //L
         int d1 = current / 1000;
-        int d2 = (current-d1*1000) / 100;
-        int d3 = (current-d1*1000-d2*100) / 10;
+        int d2 = (current - d1 * 1000) / 100;
+        int d3 = (current - d1 * 1000 - d2 * 100) / 10;
         int d4 = current % 10;
+
+        //L
         if (flag == 2) {
             int res = current - d1 * 1000;
             return res * 10 + d1;

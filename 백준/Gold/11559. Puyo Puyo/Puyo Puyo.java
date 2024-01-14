@@ -84,61 +84,61 @@ class Main {
         }
     }
 
-    //4. 가능한 모든 연쇄 수행 후 puyo가 중력에 의해 떨어지도록 함.
-//    private static void fall() {
-//        for (int c = 0; c < MAX_COL; c++) {
-//            Queue<Character> q = new LinkedList<>();
-//            for (int r = MAX_ROW - 1; r > 0; r--) {
-//                if (grid[r][c] == '.') {
-//                    continue;
-//                }
-//
-//                q.offer(grid[r][c]);
-//                grid[r][c] = '.';
-//            }
-//            if (!q.isEmpty()) {
-//                int iter = q.size();
-//                for (int k = MAX_ROW - 1; k > MAX_ROW - 1 - iter; k--) {
-//                    grid[k][c] = q.poll();
-//                }
-//            }
-//        }
-//    }
-    static void fall() {
-        // 각 열 마다 내리는 연산 수행함
-        for(int j=0; j<6; j++) {
-            down(j);
-        }
-    }
+//    4. 가능한 모든 연쇄 수행 후 puyo가 중력에 의해 떨어지도록 함.
+    private static void fall() {
+        for (int c = 0; c < MAX_COL; c++) {
+            Queue<Character> q = new LinkedList<>();
+            for (int r = MAX_ROW - 1; r >= 0; r--) {
+                if (grid[r][c] == '.') {
+                    continue;
+                }
 
-    // 한 열에 있는 뿌요를 바닥까지 내림
-    static void down(int j) {
-        Queue<Puyo> puyo = new LinkedList<>();
-        int idx = 11;
-
-        /*
-         * 뿌요의 위치를 큐에 넣음, 가장 아래에 있는 빈 칸의 인덱스를 구함
-         * -> 가장 바닥에 있는 뿌요도 큐에 넣어서 모두 빈 칸으로 만든 뒤
-         * 가장 아래부터 큐에 있는 뿌요들을 차례로 채워나감
-         */
-        for(int i=11; i>=0; i--) {
-            if(grid[i][j] != '.') {
-                puyo.add(new Puyo(i, j, grid[i][j]));
-                grid[i][j] = '.';
+                q.offer(grid[r][c]);
+                grid[r][c] = '.';
+            }
+            if (!q.isEmpty()) {
+                int iter = q.size();
+                for (int k = MAX_ROW - 1; k > MAX_ROW - 1 - iter; k--) {
+                    grid[k][c] = q.poll();
+                }
             }
         }
-        // 뿌요를 가장 밑에 있는 빈 칸에 채워나감
-        while(!puyo.isEmpty()) {
-            Puyo p = puyo.poll();
-
-            char color = p.color;
-
-            grid[idx][j] = color;
-
-            idx--;
-        }
-
     }
+//    static void fall() {
+//        // 각 열 마다 내리는 연산 수행함
+//        for(int j=0; j<6; j++) {
+//            down(j);
+//        }
+//    }
+//
+//    // 한 열에 있는 뿌요를 바닥까지 내림
+//    static void down(int j) {
+//        Queue<Puyo> puyo = new LinkedList<>();
+//        int idx = 11;
+//
+//        /*
+//         * 뿌요의 위치를 큐에 넣음, 가장 아래에 있는 빈 칸의 인덱스를 구함
+//         * -> 가장 바닥에 있는 뿌요도 큐에 넣어서 모두 빈 칸으로 만든 뒤
+//         * 가장 아래부터 큐에 있는 뿌요들을 차례로 채워나감
+//         */
+//        for(int i=11; i>=0; i--) {
+//            if(grid[i][j] != '.') {
+//                puyo.add(new Puyo(i, j, grid[i][j]));
+//                grid[i][j] = '.';
+//            }
+//        }
+//        // 뿌요를 가장 밑에 있는 빈 칸에 채워나감
+//        while(!puyo.isEmpty()) {
+//            Puyo p = puyo.poll();
+//
+//            char color = p.color;
+//
+//            grid[idx][j] = color;
+//
+//            idx--;
+//        }
+//
+//    }
 
     private static boolean isValidCoord(int y, int x) {
         return 0 <= y && y < MAX_ROW && 0 <= x && x < MAX_COL;

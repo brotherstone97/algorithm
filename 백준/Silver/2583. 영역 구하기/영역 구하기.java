@@ -22,17 +22,16 @@ class Main {
 
         for (int i = 0; i < K; i++) {
             String[] coord = br.readLine().split(" ");
-            //입력의 좌표는 x,y꼴
+            //입력의 좌표는 x,y꼴 ==col,row
             int[] leftDown = {Integer.parseInt(coord[0]), Integer.parseInt(coord[1])};
             int[] rightUp = {Integer.parseInt(coord[2]), Integer.parseInt(coord[3])};
-            //내 좌표는 y,x꼴 == row,col
+            //아래 좌표는 y,x꼴 == row,col
             int[] widthStart = {M - leftDown[1] - 1, leftDown[0]};
             int[] heightStart = {M - rightUp[1], rightUp[0] - 1};
             int width = Math.abs(leftDown[0] - rightUp[0]);
             int height = Math.abs(leftDown[1] - rightUp[1]);
 
             fillRect(widthStart, width, heightStart, height);
-
         }
         search();
 
@@ -67,19 +66,21 @@ class Main {
 
     private static int bfs(int startY, int startX) {
         int area = 0;
-        Queue<EmptyArea> q = new LinkedList<>();
-        q.offer(new EmptyArea(startY, startX));
+        Queue<int[]> q = new LinkedList<>();
+        q.offer(new int[]{startY, startX});
 
         while (!q.isEmpty()) {
-            EmptyArea e = q.poll();
+            int[] e = q.poll();
+            int y = e[0];
+            int x = e[1];
             area++;
 
             for (int k = 0; k < 4; k++) {
-                int _y = e.y + dy[k];
-                int _x = e.x + dx[k];
+                int _y = y + dy[k];
+                int _x = x + dx[k];
 
                 if (isValidCoord(_y, _x) && !grid[_y][_x]) {
-                    q.offer(new EmptyArea(_y, _x));
+                    q.offer(new int[]{_y, _x});
                     grid[_y][_x] = true;
                 }
             }
@@ -91,12 +92,4 @@ class Main {
         return 0 <= y && y < M && 0 <= x && x < N;
     }
 
-    static class EmptyArea {
-        int y, x;
-
-        EmptyArea(int y, int x) {
-            this.y = y;
-            this.x = x;
-        }
-    }
 }

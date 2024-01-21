@@ -1,5 +1,4 @@
 import java.io.*;
-import java.util.Arrays;
 
 class Main {
     private static final int[] dy = {-1, 0, 1, 0};
@@ -47,7 +46,7 @@ class Main {
             if (hasEmpty()) {
                 //동서남북 탐색
                 for (int i = 0; i < 4; i++) {
-                    rotate(true);
+                    rotate();
                     forward();
 
                     if (!isEmpty(current.y, current.x)) {
@@ -56,7 +55,9 @@ class Main {
                     }
                     break;
                 }
-            } else {
+            }
+            //3. 동서남북 중 빈칸이 없으면
+            else {
                 if (canMoveBack()) {
                     back();
                     continue;
@@ -131,19 +132,11 @@ class Main {
         current.x += 1;
     }
 
-    private static void rotate(boolean isCounterClockWise) {
-        if (isCounterClockWise) {
-            if (current.dir == 0) {
-                current.dir = 4;
-            }
-            current.dir--;
-            return;
+    private static void rotate() {
+        if (current.dir == 0) {
+            current.dir = 4;
         }
-
-        if (current.dir == 3) {
-            current.dir = -1;
-        }
-        current.dir++;
+        current.dir--;
     }
 
     private static boolean isValidCoord(int y, int x) {
@@ -159,11 +152,6 @@ class Main {
             this.y = y;
             this.x = x;
             this.dir = dir;
-        }
-
-        @Override
-        public String toString() {
-            return "y: " + y + " x: " + x + " dir: " + dir;
         }
     }
 }

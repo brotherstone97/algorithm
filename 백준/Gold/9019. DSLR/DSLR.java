@@ -2,93 +2,79 @@ import java.util.*;
 import java.io.*;
 
 class Main {
-    static class Register {
-        int cnt;
-        StringBuilder cmd;
-        int current;
-
-        public Register(int cnt, StringBuilder cmd, int current) {
-            this.cnt = cnt;
-            this.cmd = cmd;
-            this.current = current;
-        }
-    }
-
-    private static int idx = 0;
-    private static String[] cmds;
-    private static final String[] cmdMapper = {"D", "S", "L", "R"};
+    private static int currentA;
+    private static int currentB;
     private static boolean[] visited;
+    private static final String[] cmdMapper = {"D", "S", "L", "R"};
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         int T = Integer.parseInt(br.readLine());
-        cmds = new String[T];
 
         for (int i = 0; i < T; i++) {
             String[] input = br.readLine().split(" ");
-            int A = Integer.parseInt(input[0]);
-            int B = Integer.parseInt(input[1]);
+            currentA = Integer.parseInt(input[0]);
+            currentB = Integer.parseInt(input[1]);
             visited = new boolean[10000];
 
-            bfs(A, B);
-            idx++;
-//            System.out.println("================================");
+            System.out.println(bfs());
         }
 
-        Arrays.stream(cmds).forEach(System.out::println);
     }
 
-    private static void bfs(int A, int answer) {
-        Queue<Register> q = new LinkedList<>();
-        q.offer(new Register(0, new StringBuilder(), A));
+    private static String bfs() {
+        Queue<Command> q = new LinkedList<>();
+        q.offer(new Command(new StringBuilder(), currentA));
 
         while (!q.isEmpty()) {
-            Register polled = q.poll();
+            Command polled = q.poll();
 
             for (int i = 0; i < 4; i++) {
-                int calculatedCurrent = calc(polled.current, i);
-
-                if(visited[calculatedCurrent]){
+                int res = calc(polled.register, i);
+                if (res == currentB) {
+                    return new StringBuilder(polled.cmd).append(cmdMapper[i]).toString();
+                }
+                if (visited[res]) {
                     continue;
                 }
-                visited[calculatedCurrent]=true;
-
-//                System.out.println(A + ", "+ calculatedCurrent+","+ polled.cmd+cmdMapper[i]);
-                //시간 복잡도 개선(q.poll시 검증 -> enqueue전 검증)
-                if (calculatedCurrent == answer) {
-                    cmds[idx] = polled.cmd.append(cmdMapper[i]).toString();
-                    return;
-                }
-
-                q.offer(new Register(polled.cnt + 1,
-                        new StringBuilder(polled.cmd.toString()).append(cmdMapper[i]),
-                        calculatedCurrent));
+                visited[res] = true;
+                q.offer(new Command(new StringBuilder(polled.cmd).append(cmdMapper[i]), res));
             }
         }
+        return null;
     }
 
-    private static int calc(int current, int flag) {
+    private static int calc(int num, int i) {
         //D
-        if (flag == 0) {
-            return current * 2 % 10000;
+        if (i == 0) {
+            return num * 2 % 10000;
         }
         //S
-        if (flag == 1) {
-            if (current == 0) {
+        if (i == 1) {
+            if (num == 0) {
                 return 9999;
             }
-            return current - 1;
+            return num - 1;
         }
+        int d1 = num / 1000;
+        int d2 = num % 1000 / 100;
+        int d3 = num % 100 / 10;
+        int d4 = num % 10;
         //L
-        int d1 = current / 1000;
-        int d2 = (current-d1*1000) / 100;
-        int d3 = (current-d1*1000-d2*100) / 10;
-        int d4 = current % 10;
-        if (flag == 2) {
-            int res = current - d1 * 1000;
-            return res * 10 + d1;
+        if (i == 2) {
+            return d2 * 1000 + d3 * 100 + d4 * 10 + d1;
         }
         //R
         return d4 * 1000 + d1 * 100 + d2 * 10 + d3;
+    }
+
+    static class Command {
+        StringBuilder cmd;
+        int register;
+
+        public Command(StringBuilder cmd, int register) {
+            this.cmd = cmd;
+            this.register = register;
+        }
     }
 }

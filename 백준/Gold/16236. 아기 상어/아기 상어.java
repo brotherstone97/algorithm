@@ -1,9 +1,14 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 1. 현재 상어의 위치가 본인보다 더 큰 물고기들로 둘러싸여있다면 종료(isLockedDown)
+ * 2. grid를 순회하며 이동가능한 물고기가 발견되면 그 물고기까지의 거리를 구함.(calcDistance) 단,가는 도중 막혀있다면 continue
+ * 3. 위를 통해 현재 도달가능하고 먹을 수 있는 물고기 중 최단거리를 구하게 되었고, 최단거리에 있는 먹을 수있는 물고기를 list에 모두 담음
+ * 4. list의 길이가 1이상이면 갈 수 있는 곳이 2곳 이상이기 때문에 제일 위에 있는 물고기로 이동하게 하며, 그마저도 둘 이상이면 가장 왼쪽 물고기 즉, 높이 우선순위가 같다면 그 중 가장 왼쪽에 있는 물고기로 이동(getTargetFish)
+ * 5. target이 확정되면 레벨업 조건인지 확인하고(leveling), 현재 상어의 위치를 0으로, 타겟의 위치를 9로 바꾼 뒤 answer+=최단거리로 갱신해준다.
+ */
 class Main {
     private static final int[] dy = {1, 0, -1, 0};
     private static final int[] dx = {0, 1, 0, -1};
@@ -16,17 +21,7 @@ class Main {
     private static int answer;
 
     public static void main(String[] args) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        N = Integer.parseInt(br.readLine());
-        grid = new int[N][N];
-
-        for (int i = 0; i < N; i++) {
-            String[] input = br.readLine().split(" ");
-            grid[i] = Arrays.stream(input).mapToInt(Integer::parseInt).toArray();
-        }
-
-        currentShark = whereIsShark();
-
+        init();
         while (!hasHelpCall) {
             if (isLockedDown()) {
                 break;
@@ -59,7 +54,6 @@ class Main {
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
                 if (grid[i][j] > 0 && grid[i][j] < sharkLevel) {
-                    //배열에 해당좌표까지의 거리가 이미 있으면 그거 쓰고 아니면 bfs호출
                     int distance = calcDistance(new int[]{i, j});
                     if (distance == -1) {
                         continue;
@@ -77,7 +71,7 @@ class Main {
                 }
             }
         }
-
+        
         if (nearest == Integer.MAX_VALUE) {
             hasHelpCall = true;
             return;
@@ -177,6 +171,19 @@ class Main {
             }
         }
         throw new NoSuchElementException("상어 없음");
+    }
+
+    private static void init() throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        N = Integer.parseInt(br.readLine());
+        grid = new int[N][N];
+
+        for (int i = 0; i < N; i++) {
+            String[] input = br.readLine().split(" ");
+            grid[i] = Arrays.stream(input).mapToInt(Integer::parseInt).toArray();
+        }
+
+        currentShark = whereIsShark();
     }
 
     private static boolean isValidCoord(int y, int x) {

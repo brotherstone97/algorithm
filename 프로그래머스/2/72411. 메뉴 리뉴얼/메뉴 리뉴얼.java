@@ -1,76 +1,74 @@
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.*;
 
 class Solution {
-    private List<String> answer = new ArrayList<>();
-    private int[] max;
-    private Map<String, Integer> menu = new HashMap<>();
+    private Map<String, Integer> map = new HashMap<>();
+    private List<String> list = new ArrayList<>();
     
     public String[] solution(String[] orders, int[] course) {
-        max = new int[course.length];
+        for(int c : course){
+            calcCombi(orders, c);
+        }        
         
-        //1. orders내 알파벳 정렬
-        for(int i=0; i<orders.length; i++){
-            orders[i] = sortOrder(orders[i]);
-        }
-        
-        //2. order요소별 조합 구해 Map에 저장
         for(int c:course){
-            for(int i=0; i<orders.length; i++){
-                combi(orders[i], new boolean[orders[i].length()], 0, orders[i].length(), c);
-            }
+            getCourseMenu(c);
         }
+        //3. list 오름차순 -> 리턴        
+        Collections.sort(list);
         
-        for(int i=0; i<course.length; i++){
-            final int _i=i;
-            //3. 길이가 course[i]인 menu중 max를 구함
-            menu.entrySet().stream()
-                .filter(menu->menu.getKey().length()==course[_i])
-                .forEach(filteredMenu -> {
-                    max[_i]=Math.max(max[_i], filteredMenu.getValue());
-                });
-            
-            //4. 길이가 course[i]인 menu중 value==max(가장 많이 주문받은)인 값에 대해 그 key를 List의 저장. 단 1명만 주문한 메뉴는 제외
-            menu.entrySet().stream()
-                .filter(menu->menu.getKey().length()==course[_i])
-                .forEach(filteredMenu -> {
-                            if(filteredMenu.getValue()>1&&filteredMenu.getValue()==max[_i]){
-                            answer.add(filteredMenu.getKey());
-                           }
-                });            
-        }
-        
-        //5. course별 최대 주문 메뉴를 저장한 list를 정렬한 뒤 배열로 반환
-        return answer.stream().sorted().toArray(String[]::new);
+        return list.toArray(new String[0]);
     }
     
-    private void combi(String order, boolean[] visited, int start, int n, int r){
+        //1. course의 모든 요소에 해당하는 조합을 구함 ex) key(단품 메뉴 조합): ABC, value(주문한 손님 수):2 이때, 2명 이상의 손님이 주문한 단품만 map.add()
+    private void calcCombi(String[] orders, int r){
+        for(String order: orders){
+            recurse(order, r, new boolean[order.length()],0);
+        }
+    }
+    private void recurse(String str, int r, boolean[] visited, int start){
         if(r==0){
-            saveCombi(order, visited, n);
+            StringBuilder sb = new StringBuilder();
+            for(int i=0; i<str.length(); i++){
+                if(visited[i]){
+                    sb.append(str.charAt(i));
+                }
+            }
+            char[] charArr = sb.toString().toCharArray();
+            Arrays.sort(charArr);
+            String key = new String(charArr);
+            map.put(key, map.getOrDefault(key,0)+1);
             return;
         }
-        
-        for(int i=start; i<n; i++){
+
+        for(int i=start; i< str.length(); i++){
+            if(visited[i]){
+                continue;
+            }
+
             visited[i]=true;
-            combi(order, visited, i+1, n, r-1);
+            recurse(str, r-1, visited, i+1);
             visited[i]=false;
         }
     }
-    
-    private void saveCombi(String order, boolean[] visited, int n){
-        StringBuilder temp = new StringBuilder();
+    //2. 각 course의 요소에 해당하는 길이를 가진 key 집합을 추출하고 가장 큰 조합들을 선별함 -> max value구한 다음 각 조합의 value가 max-value와 같은지 판단. 이후 해당하는 조합만 list.add()
+    private void getCourseMenu(int menuSize){
+        Set<Map.Entry<String, Integer>> entries = map.entrySet();
+        Map<String, Integer> _map = new HashMap<>();
         
-        for(int i=0; i<n; i++){
-            if(visited[i]){
-                temp.append(order.charAt(i));
+        for(Map.Entry<String, Integer> entry: entries){
+            if(entry.getKey().length()==menuSize){
+                _map.put(entry.getKey(), entry.getValue());
             }
         }
-        menu.put(temp.toString(),menu.getOrDefault(temp.toString(), 0)+1);
-    }
-    
-    private String sortOrder(String order){
-        char[] charArr = order.toCharArray();
-        Arrays.sort(charArr);
-        return String.valueOf(charArr);
+        
+        int max = _map.values().stream().mapToInt(e->e).max().orElse(-1);
+        List<String> filtered = _map.entrySet()
+            .stream()
+            .filter(e->e.getValue()==max&&e.getValue()>1)
+            .map(e->e.getKey())
+            .collect(Collectors.toList());
+        
+        list.addAll(filtered);
     }
 }

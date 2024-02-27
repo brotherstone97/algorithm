@@ -1,88 +1,113 @@
 import java.util.*;
 
 class Solution {
-    private int[] dy = {1,0,-1,0};
-    private int[] dx = {0,1,0,-1};
-    private int maxY;
-    private int maxX;
-    private int answer = Integer.MAX_VALUE;
-    private int[] rPoint;
+    int[] dy={1,0,-1,0};
+    int[] dx={0,1,0,-1};
     
-    private boolean[][] visited;
+    int[] R;
+    int[] G;
     
-    public int solution(String[] board) {
-        //init
-        maxY = board.length;
-        maxX = board[0].length();
-        getRPoint(board);
-        visited = new boolean[maxY][maxX];        
-        visited[rPoint[0]][rPoint[1]]=true;
+    String[] board;
+    boolean[][] visited;
+    
+    //2. Queue에 들어갈 status class
+    static class Status{
+        int y;
+        int x;
+        int cnt;
         
-        bfs(board);
-        
-        if(answer==Integer.MAX_VALUE){
-            return -1;
-        }
-        
-        return answer;
-    }
-
-    //2. BFS
-    private void bfs(String[] board){
-        Queue<int[]> q = new LinkedList<>();
-        q.offer(new int[]{rPoint[0], rPoint[1], 0});
-        
-        while(!q.isEmpty()){
-            int[] polled = q.poll();
-            int y = polled[0];
-            int x = polled[1];
-            int cnt = polled[2];
-            
-            for(int i=0; i<4; i++){
-                int _y = y;
-                int _x = x;
-                while(isValidCoordi(_y+dy[i], _x+dx[i], board)){
-                    _y+=dy[i];
-                    _x+=dx[i];
-                }
-                //처음부터 y에서 걸러져 제자리라면
-                if(_y==y&&_x==x){
-                    continue;
-                }
-                if(visited[_y][_x]==true){
-                    continue;
-                }
-                if(board[_y].charAt(_x)=='G'){
-                    answer = Math.min(answer, cnt+1);
-                    visited[_y][_x]=true;
-                    continue;
-                }
-                //끝까지 이동한 좌표를 enQ
-                q.offer(new int[]{_y, _x, cnt+1});
-                visited[_y][_x]=true;
-            }
-            
+        Status(int y, int x, int cnt){
+            this.y=y;
+            this.x=x;
+            this.cnt=cnt;
         }
     }
     
-    //1. 시작포인트
-    private void getRPoint(String[] board){
-        for(int i=0; i<maxY; i++){
-            for(int j=0; j<maxX; j++){
-                if(board[i].charAt(j)=='R'){
-                    rPoint = new int[]{i,j};
+    public int solution(String[] _board) {
+        board = _board;
+        visited = new boolean[board.length][board[0].length()];
+        searchRG();
+        return bfs();
+    }
+//0.R과 G를 찾는다.
+    void searchRG(){
+        for(int i=0; i<board.length; i++){
+            for(int j=0; j<board[0].length(); j++){
+                if(R!=null&&G!=null){
                     return;
                 }
+                if(board[i].charAt(j)=='R'){
+                    R = new int[]{i,j};
+                    continue;
+                }
+                if(board[i].charAt(j)=='G'){
+                    G=new int[]{i,j};
+                }
             }
-        }
+        }        
     }
     
-    private boolean isValidCoordi(int y, int x, String[] board){
-        if(0<=y&&y<maxY&&0<=x&&x<maxX){
-            if(board[y].charAt(x)!='D'){
-                return true;
+    //1. 미끄러져 이동한다. 제한조건: 현재위치 기준 가려는 방향이 장애물로 막혀있거나 경계선이라 더이상 갈 수 없는 경우는 제외
+    int[] slide(Status cur, int dir){
+        
+        //하
+        if(dir==0){
+           while(cur.y<board.length && board[cur.y].charAt(cur.x)!='D'){
+               cur.y++;
+           }
+            return new int[]{cur.y-1, cur.x};
+        }
+        //우
+        if(dir==1){
+           while(cur.x<board[0].length() && board[cur.y].charAt(cur.x)!='D'){
+               cur.x++;
+           }
+            return new int[]{cur.y, cur.x-1};            
+        }
+        //상
+        if(dir==2){
+           while(cur.y>-1 && board[cur.y].charAt(cur.x)!='D'){
+               cur.y--;
+           }
+            return new int[]{cur.y+1, cur.x};                  
+        }
+        //좌
+           while(cur.x>-1 && board[cur.y].charAt(cur.x)!='D'){
+               cur.x--;
+           }
+            return new int[]{cur.y, cur.x+1};           
+    }
+
+        
+    //3. bfs
+    int bfs(){
+        Queue<Status> q = new LinkedList<>();
+        q.offer(new Status(R[0], R[1], 0));
+        
+        while(!q.isEmpty()){
+            Status polled = q.poll();
+            for(int i=0; i<4; i++){
+                int _y = polled.y+dy[i];
+                int _x = polled.x+dx[i];
+                
+                if(isValidCoord(_y, _x)&&board[_y].charAt(_x)!='D'){
+                    int[] slidingRes = slide(new Status(_y, _x, -1), i);
+                    
+                    if(!visited[slidingRes[0]][slidingRes[1]]){
+                        if(board[slidingRes[0]].charAt(slidingRes[1])=='G'){
+                            return polled.cnt+1;
+                        }
+                        visited[slidingRes[0]][slidingRes[1]]=true;
+                        q.offer(new Status(slidingRes[0], slidingRes[1], polled.cnt+1));
+                    }
+                }
             }
         }
-        return false;
+        return -1;
+    }
+    
+    //4. 현재 좌표가 grid범위 내 좌표인지 체크
+    boolean isValidCoord(int y, int x){
+        return 0<=y&&y<board.length&&0<=x&&x<board[0].length();
     }
 }

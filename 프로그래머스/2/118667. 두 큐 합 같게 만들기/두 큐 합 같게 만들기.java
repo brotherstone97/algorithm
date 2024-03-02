@@ -1,50 +1,59 @@
 import java.util.*;
-import java.util.stream.*;
+import java.util.stream.Collectors;
 
 class Solution {
+    private long q1Sum;
+    private long q2Sum;
+    private long target;
+    
     public int solution(int[] queue1, int[] queue2) {
-        int answer = 0;
+        int q1Max = 0;
+        int q2Max = 0;
         Queue<Integer> q1 = new LinkedList<>();
         Queue<Integer> q2 = new LinkedList<>();
-        long sum1 = 0;
-        long sum2 = 0;
         
         for(int i=0; i<queue1.length; i++){
-            sum1+=queue1[i];
-            sum2+=queue2[i];
-            
+            q1Sum+=(long)queue1[i];
+            q1Max = Math.max(q1Max,queue1[i]);
             q1.offer(queue1[i]);
+            
+            q2Sum+=(long)queue2[i];
+            q2Max = Math.max(q2Max,queue2[i]);
             q2.offer(queue2[i]);
         }
-        int maxCount = queue1.length*3;
+        target = (q1Sum+q2Sum)/2;
         
-        while(sum1!=sum2){
-            if(maxCount-answer==0){
-                return -1;
-            }
-            answer++;
-            
-            if(sum1>sum2){
+        //target보다 큰 요소가 있으면 -1리턴
+        if(q1Max>target||q2Max>target){
+            return -1;
+        }
+        
+        return calcCnt(q1, q2);
+    }
+    
+    private int calcCnt(Queue<Integer> q1, Queue<Integer> q2){
+        int cnt=0;
+        int limit = q1.size()*3;
+
+        while(q1Sum!=q2Sum&&cnt<limit){
+            cnt++;
+            if(q1Sum>q2Sum){
                 int polled = q1.poll();
-                sum1-=polled;
-                sum2+=polled;
-                
                 q2.offer(polled);
+                q1Sum-=polled;
+                q2Sum+=polled;
                 continue;
             }
             int polled = q2.poll();
-            sum2-=polled;
-            sum1+=polled;
-            
             q1.offer(polled);
+            q1Sum+=polled;
+            q2Sum-=polled;
         }
-        return answer;
         
+        if(cnt>=limit){
+            return -1;
+        }
+        
+        return cnt;
     }
-    
 }
-
-
-//1.    q1, q2의 원소의 합(long)이 구하기, 만약 홀수이면 -1 return. 아니라면 각 큐의 원소합은 (q1+q2)/2
-
-//2. dfs로 구현, 각 큐의 원소합이 조건에 맞을경우 answer = min(answer, 현재)

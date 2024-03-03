@@ -23,6 +23,11 @@ class Solution {
         }
         target = (q1Sum+q2Sum)/2;
         
+        //합이 홀수일 때 -1
+        if((q1Sum+q2Sum)%2==1){
+            return -1;
+        }
+        
         //target보다 큰 요소가 있으면 -1리턴
         if(q1Max>target||q2Max>target){
             return -1;

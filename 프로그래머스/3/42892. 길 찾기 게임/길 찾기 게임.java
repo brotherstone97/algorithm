@@ -1,3 +1,4 @@
+//hard nodeinfo 정렬은 성공했으나, 정렬된 배열을 이용해 이진트리를 만드는 건 실패
 import java.util.*;
 
 class Solution {

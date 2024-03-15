@@ -8,10 +8,8 @@
  * 따라서 같은 값을 TreeSet에 삽입해야 할 때는 위 조건일 때 양수 또는 음수를 리턴하도록 compareTo의 로직을 수정해야한다.
  **/
 
-
 import java.io.*;
 import java.util.*;
-
 
 //중복 요소가 있는 경우 엣지 케이스  체크
 class Main {
@@ -36,18 +34,15 @@ class Main {
         }
     }
 
-    static TreeSet<Data> _max;
-    static TreeSet<Data> _min;
+    static TreeSet<Data> treeSet;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         int T = Integer.parseInt(br.readLine());
 
         //기본적으로 오름차순 정렬
-
         for (int i = 0; i < T; i++) {
-            _max = new TreeSet<>();
-            _min = new TreeSet<>();
+            treeSet = new TreeSet<>();
             int K = Integer.parseInt(br.readLine());
 
             for (int j = 0; j < K; j++) {
@@ -56,20 +51,7 @@ class Main {
                 int number = Integer.parseInt(input[1]);
                 process(cmd, number);
             }
-            //결과 출력
-            if (_max.isEmpty() && _min.isEmpty()) {
-                System.out.println("EMPTY");
-                continue;
-            }
-            if (_max.isEmpty()) {
-                System.out.printf("%d %d\n", _min.last().value, _min.first().value);
-                continue;
-            }
-            if (_min.isEmpty()) {
-                System.out.printf("%d %d\n", _max.first().value, _max.last().value);
-                continue;
-            }
-            System.out.printf("%d %d\n", _max.first().value, _min.first().value);
+            printResult();
         }
     }
 
@@ -77,49 +59,27 @@ class Main {
         Data current = new Data(number);
         //추가
         if (cmd.equals("I")) {
-            //둘 다 빈 경우
-            if (_max.isEmpty() && _min.isEmpty()) {
-                _max.add(current);
-                return;
-            }
-            //_max만 빈 경우
-            if (_max.isEmpty()) {
-                if (number > _min.last().value) {
-                    _max.add(current);
-                    return;
-                }
-                _min.add(current);
-                return;
-            }
-            //둘다 안 비었다 || min만 비었다.
-            if (number >= _max.first().value) {
-                _min.add(_max.pollFirst());
-                _max.add(current);
-                return;
-            }
-            _min.add(current);
+            treeSet.add(current);
             return;
         }
 
-        //max에서 제거
-        if (number == 1) {
-            if (!_max.isEmpty()) {
-                _max.pollFirst();
+        //삭제
+        if (number == -1) {
+            if (!treeSet.isEmpty()) {
+                treeSet.pollFirst();
                 return;
             }
-            if (!_min.isEmpty()) {
-                _min.pollLast();
-                return;
-            }
+        }
+        if (!treeSet.isEmpty()) {
+            treeSet.pollLast();
+        }
+    }
+
+    static void printResult() {
+        if (treeSet.isEmpty()) {
+            System.out.println("EMPTY");
             return;
         }
-        //min에서 제거
-        if (!_min.isEmpty()) {
-            _min.pollFirst();
-            return;
-        }
-        if (!_max.isEmpty()) {
-            _max.pollLast();
-        }
+        System.out.printf("%d %d\n", treeSet.last().value, treeSet.first().value);
     }
 }
